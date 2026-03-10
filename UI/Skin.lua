@@ -64,7 +64,7 @@ function DF.UI.Skin.FlatCheckBox(parent, labelText, x, y, r, g, b, getVal, setVa
     cb:EnableMouse(true)
     cb:RegisterForClicks("LeftButtonUp")
     cb:SetHitRectInsets(-6, -6, -6, -6)
-    cb:SetFrameLevel(parent:GetFrameLevel() + 10)
+    cb:SetFrameLevel(parent:GetFrameLevel() + 20)
     local box = cb:CreateTexture(nil, "BACKGROUND")
     box:SetAllPoints(cb)
     setBg(box, bgInput)
@@ -263,9 +263,17 @@ function DF.UI.Skin.ScrollFrame(parent, barWidth)
     setBg(track, scrollTrack)
     local thumb = bar:CreateTexture(nil, "OVERLAY")
     thumb:SetSize(barWidth - 2, 40)
-    thumb:SetPoint("CENTER", bar, "CENTER", 0, 0)
     setBg(thumb, scrollThumb)
     bar.thumb = thumb
+    local function updateThumbPosition()
+        local value = bar:GetValue()
+        local barH = bar:GetHeight()
+        local thumbH = thumb:GetHeight()
+        local range = math.max(0, barH - thumbH)
+        local yOffset = (value / 1000) * range
+        thumb:ClearAllPoints()
+        thumb:SetPoint("TOP", bar, "TOP", 0, -yOffset)
+    end
     bar:SetScript("OnValueChanged", function(self, value)
         local viewH = scroll:GetHeight()
         local contentH = child:GetHeight()
@@ -279,6 +287,7 @@ function DF.UI.Skin.ScrollFrame(parent, barWidth)
             child:SetPoint("LEFT", scroll, "LEFT", 0, -offset)
             child:SetPoint("RIGHT", scroll, "RIGHT", -barWidth - 4, -offset)
         end
+        updateThumbPosition()
     end)
     bar:SetScript("OnEnter", function() setBg(bar.thumb, scrollThumbHover) end)
     bar:SetScript("OnLeave", function() setBg(bar.thumb, scrollThumb) end)
@@ -291,6 +300,7 @@ function DF.UI.Skin.ScrollFrame(parent, barWidth)
         else
             bar:Show()
             bar:SetMinMaxValues(0, 1000)
+            updateThumbPosition()
         end
     end
     scroll.Refresh = function()
@@ -300,6 +310,7 @@ function DF.UI.Skin.ScrollFrame(parent, barWidth)
             bar:Hide()
         else
             bar:Show()
+            updateThumbPosition()
         end
     end
     scroll:SetScript("OnSizeChanged", scroll.UpdateScroll)

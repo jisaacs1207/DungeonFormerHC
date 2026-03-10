@@ -197,6 +197,9 @@ function DF.UI.SelectTab(index)
     local content = frame.content
     local children = { content:GetChildren() }
     for _, child in pairs(children) do
+        if child._list and child._list.Hide then
+            child._list:Hide()
+        end
         child:SetParent(nil)
         child:Hide()
     end
