@@ -7,6 +7,7 @@
 
 Core\Config.lua
 Core\WhoAPI.lua
+UI\Skin.lua
 UI\Frame.lua
 UI\TabSearch.lua
 UI\TabResults.lua

@@ -1,13 +1,14 @@
 --[[
-    DungeonFormer - Contacted tab. Clean wide layout.
+    DungeonFormer - Contacted tab. Flat skin, custom scrollbar.
 ]]
 
 local DF = DungeonFormer
 local Colors = DF.ClassColors
+local Skin = DF.UI.Skin
 
-local PAD = 14
+local PAD = Skin.PAD or 14
 local ROW_H = 20
-local TOP = 12
+local TOP = 14
 
 local function GetClassColor(classStr)
     if not classStr then return 1, 1, 1 end
@@ -26,27 +27,21 @@ function DF.UI.BuildTabWhispered(container)
     local replyLabel = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     replyLabel:SetPoint("TOPLEFT", content, "TOPLEFT", PAD, -y)
     replyLabel:SetText("When someone you whispered replies, send this:")
-    replyLabel:SetTextColor(0.75, 0.72, 0.65, 1)
+    replyLabel:SetTextColor(0.72, 0.7, 0.65, 1)
     y = y + 18
-    local replyEdit = CreateFrame("EditBox", nil, content, "InputBoxTemplate")
+    local replyEdit = Skin.FlatEditBox(content, nil, 24)
+    replyEdit:ClearAllPoints()
     replyEdit:SetPoint("TOPLEFT", content, "TOPLEFT", PAD, -y)
     replyEdit:SetPoint("TOPRIGHT", content, "TOPRIGHT", -PAD, -y)
-    replyEdit:SetHeight(22)
-    replyEdit:SetAutoFocus(false)
     replyEdit:SetText(State.ReplyText or "")
     replyEdit:SetScript("OnTextChanged", function(self) State.ReplyText = self:GetText() end)
-    replyEdit:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-    y = y + 28
+    y = y + 30
 
     local toggleLabel = content:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     toggleLabel:SetPoint("TOPLEFT", content, "TOPLEFT", PAD, -y)
     toggleLabel:SetText("Auto-reply")
-    toggleLabel:SetTextColor(0.7, 0.67, 0.6, 1)
-    local replyBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-    replyBtn:SetPoint("TOPLEFT", content, "TOPLEFT", PAD + 72, -y - 2)
-    replyBtn:SetSize(56, 22)
-    replyBtn:SetText(State.ReplyingButton == "On" and "On" or "Off")
-    replyBtn:SetScript("OnClick", function()
+    toggleLabel:SetTextColor(0.68, 0.66, 0.6, 1)
+    local replyBtn = Skin.FlatButton(content, 56, 24, State.ReplyingButton == "On" and "On" or "Off", function(btn)
         if State.ReplyingButton == "On" then
             State.ReplyingButton = "Off"
             DF.UI.SetStatusText("  Auto-reply off")
@@ -54,17 +49,12 @@ function DF.UI.BuildTabWhispered(container)
             State.ReplyingButton = "On"
             DF.UI.SetStatusText("  Auto-reply on — will reply when they message")
         end
-        replyBtn:SetText(State.ReplyingButton)
-        DF.UI.SelectTab(1)
-        DF.UI.SelectTab(3)
-    end)
-    y = y + 30
+        if btn and btn.SetText then btn:SetText(State.ReplyingButton) end
+    end, false)
+    replyBtn:SetPoint("TOPLEFT", content, "TOPLEFT", PAD + 72, -y - 2)
+    y = y + 32
 
-    local clearNRBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-    clearNRBtn:SetPoint("TOPLEFT", content, "TOPLEFT", PAD, -y)
-    clearNRBtn:SetSize(180, 24)
-    clearNRBtn:SetText("Remove who didn't reply")
-    clearNRBtn:SetScript("OnClick", function()
+    local clearNRBtn = Skin.FlatButton(content, 180, 26, "Remove who didn't reply", function()
         local toremove = {}
         for i = 1, #(State.carelessWhispered or {}) do
             if not State.carelessWhispered[i].recentChat then table.insert(toremove, i) end
@@ -74,18 +64,16 @@ function DF.UI.BuildTabWhispered(container)
         DF.UI.SelectTab(1)
         DF.UI.SelectTab(3)
         DF.UI.SetStatusText("  Removed players who didn't reply")
-    end)
-    local clearBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
-    clearBtn:SetPoint("TOPLEFT", content, "TOPLEFT", PAD + 186, -y)
-    clearBtn:SetSize(90, 24)
-    clearBtn:SetText("Clear all")
-    clearBtn:SetScript("OnClick", function()
+    end, false)
+    clearNRBtn:SetPoint("TOPLEFT", content, "TOPLEFT", PAD, -y)
+    local clearBtn = Skin.FlatButton(content, 90, 26, "Clear all", function()
         State.carelessWhispered = {}
         DF.UI.SelectTab(1)
         DF.UI.SelectTab(3)
         DF.UI.SetStatusText("  Contacted list cleared")
-    end)
-    y = y + 30
+    end, false)
+    clearBtn:SetPoint("TOPLEFT", content, "TOPLEFT", PAD + 186, -y)
+    y = y + 32
 
     local list = State.carelessWhispered or {}
 
@@ -96,24 +84,26 @@ function DF.UI.BuildTabWhispered(container)
         empty:SetWordWrap(true)
         empty:SetNonSpaceWrap(true)
         empty:SetText("No one contacted yet.\n\nWhen you whisper someone from the Players tab, they appear here. Click a name to move them back to Players.")
-        empty:SetTextColor(0.55, 0.52, 0.48, 1)
+        empty:SetTextColor(0.52, 0.5, 0.46, 1)
     else
         local hint = content:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         hint:SetPoint("TOPLEFT", content, "TOPLEFT", PAD, -y)
         hint:SetText("Click a name to move back to Players")
-        hint:SetTextColor(0.55, 0.52, 0.48, 1)
-        y = y + 18
+        hint:SetTextColor(0.52, 0.5, 0.46, 1)
+        y = y + 20
 
-        local scrollFrame = CreateFrame("ScrollFrame", "DFWhisperedScroll", content, "UIPanelScrollFrameTemplate")
+        local scrollFrame, scrollChild = Skin.ScrollFrame(content, 10)
         scrollFrame:SetPoint("TOPLEFT", content, "TOPLEFT", PAD, -y)
-        scrollFrame:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", -PAD - 20, 0)
-        local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-        scrollChild:SetPoint("TOPLEFT", scrollFrame, "TOPLEFT", 0, 0)
-        scrollChild:SetPoint("LEFT", scrollFrame, "LEFT", 0, 0)
-        scrollChild:SetPoint("RIGHT", scrollFrame, "RIGHT", 0, 0)
-        scrollChild:SetHeight(1)
-        scrollFrame:SetScrollChild(scrollChild)
-        scrollChild:SetWidth(380)
+        scrollFrame:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", -PAD, 0)
+        local function updateScrollChildWidth()
+            local w = scrollFrame:GetWidth()
+            if w and w > 0 then scrollChild:SetWidth(math.max(1, w - 14)) end
+        end
+        updateScrollChildWidth()
+        scrollFrame:SetScript("OnSizeChanged", function()
+            updateScrollChildWidth()
+            if scrollFrame.UpdateScroll then scrollFrame:UpdateScroll() end
+        end)
 
         local totalHeight = 0
         for i, player in ipairs(list) do
@@ -139,23 +129,23 @@ function DF.UI.BuildTabWhispered(container)
                 and ("|cff%02x%02x%02x[%s]|r %s  — %s"):format(r * 255, g * 255, b * 255, level, name, string.sub(message, 1, 24))
                 or ("|cff%02x%02x%02x[%s]|r %s"):format(r * 255, g * 255, b * 255, level, name)
             local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-            label:SetPoint("LEFT", row, "LEFT", 6, 0)
-            label:SetPoint("RIGHT", row, "RIGHT", -6, 0)
+            label:SetPoint("LEFT", row, "LEFT", 8, 0)
+            label:SetPoint("RIGHT", row, "RIGHT", -8, 0)
             label:SetJustifyH("LEFT")
             label:SetText(line)
             local hl = row:CreateTexture(nil, "HIGHLIGHT")
             hl:SetAllPoints()
-            hl:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
-            hl:SetBlendMode("ADD")
+            hl:SetTexture("Interface\\Buttons\\WHITE8x8")
+            if hl.SetColorTexture then hl:SetColorTexture(1, 1, 1, 0.08) end
             row.hl = hl
             hl:Hide()
             totalHeight = totalHeight + ROW_H
         end
         scrollChild:SetHeight(math.max(totalHeight, 1))
-        scrollFrame:SetScript("OnShow", function(self)
-            local w = self:GetWidth()
-            if w and w > 0 then scrollChild:SetWidth(w) end
-        end)
+        if scrollFrame.bar and scrollFrame.bar.SetValue then
+            scrollFrame.bar:SetValue(0)
+        end
+        scrollFrame:Refresh()
     end
 
     DF.UI.SetStatusText(#list > 0 and ("  " .. #list .. " contacted") or "  No one contacted yet")
