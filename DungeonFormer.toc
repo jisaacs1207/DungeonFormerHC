@@ -1,9 +1,14 @@
-## Interface: 80200
+## Interface: 11508
 ## Title: DungeonFormer
 ## Author: Josh Isaacs
-## Version: 0.1
+## Version: 0.2
 ## DefaultState: enabled
-## SavedVariables: carelessWhispered, blacklist
+## SavedVariables: DungeonFormerDB, carelessWhispered
 
-embeds.xml
+Core\Config.lua
+Core\WhoAPI.lua
+UI\Frame.lua
+UI\TabSearch.lua
+UI\TabResults.lua
+UI\TabWhispered.lua
 DungeonFormer.lua
